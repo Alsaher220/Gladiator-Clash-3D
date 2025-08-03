@@ -7,125 +7,72 @@
     body {
       margin: 0;
       overflow: hidden;
-      font-family: sans-serif;
     }
     canvas {
       display: block;
       background: black;
     }
-    #ui {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: white;
-      z-index: 1;
-    }
   </style>
 </head>
 <body>
-
-<div id="ui">
-  <div>Fighter 1 Health: <span id="health1">100</span></div>
-  <div>Fighter 2 Health: <span id="health2">100</span></div>
-  <div id="result"></div>
-</div>
-
 <canvas id="gameCanvas" width="800" height="400"></canvas>
-
 <script>
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
-  // Images
+  // Set image sources (MATCH your actual file names in the repo)
   const arenaImg = new Image();
-  arenaImg.src = "arena.png.jpg";
+  arenaImg.src = "arena.jpg"; // e.g. arena.jpg, arena.png, Arena.PNG
 
   const fighter1Img = new Image();
-  fighter1Img.src = "fighter1.png.PNG";
+  fighter1Img.src = "fighter1.png"; // e.g. fighter1.png, Fighter1.PNG
 
   const fighter2Img = new Image();
-  fighter2Img.src = "fighter2.png.PNG";
+  fighter2Img.src = "fighter2.png"; // e.g. fighter2.png, Fighter2.PNG
 
-  const fighter1 = { x: 100, y: 200, width: 100, height: 100, health: 100, color: "blue" };
-  const fighter2 = { x: 600, y: 200, width: 100, height: 100, health: 100, color: "red" };
+  // Basic fighter positions
+  const fighter1 = { x: 100, y: 220, width: 100, height: 100 };
+  const fighter2 = { x: 600, y: 220, width: 100, height: 100 };
 
-  const keys = {};
-
+  // Draw the game elements
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(arenaImg, 0, 0, canvas.width, canvas.height);
     ctx.drawImage(fighter1Img, fighter1.x, fighter1.y, fighter1.width, fighter1.height);
     ctx.drawImage(fighter2Img, fighter2.x, fighter2.y, fighter2.width, fighter2.height);
+
+    // Optional score display
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("Fighter 1", 50, 30);
+    ctx.fillText("Fighter 2", 650, 30);
   }
 
-  function update() {
-    if (keys["a"]) fighter1.x -= 5;
-    if (keys["d"]) fighter1.x += 5;
-
-    if (keys["ArrowLeft"]) fighter2.x -= 5;
-    if (keys["ArrowRight"]) fighter2.x += 5;
-
-    if (fighter1.x < 0) fighter1.x = 0;
-    if (fighter1.x + fighter1.width > canvas.width) fighter1.x = canvas.width - fighter1.width;
-
-    if (fighter2.x < 0) fighter2.x = 0;
-    if (fighter2.x + fighter2.width > canvas.width) fighter2.x = canvas.width - fighter2.width;
-  }
-
-  function checkCollision(attacker, target) {
-    return (
-      attacker.x < target.x + target.width &&
-      attacker.x + attacker.width > target.x &&
-      attacker.y < target.y + target.height &&
-      attacker.y + attacker.height > target.y
-    );
-  }
-
-  function attack(attacker, target, targetHealthId) {
-    if (checkCollision(attacker, target)) {
-      target.health -= 10;
-      if (target.health < 0) target.health = 0;
-      document.getElementById(targetHealthId).textContent = target.health;
-      checkWinner();
-    }
-  }
-
-  function checkWinner() {
-    if (fighter1.health <= 0) {
-      document.getElementById("result").textContent = "Fighter 2 Wins!";
-    } else if (fighter2.health <= 0) {
-      document.getElementById("result").textContent = "Fighter 1 Wins!";
-    }
-  }
-
+  // Main game loop
   function gameLoop() {
-    update();
     draw();
     requestAnimationFrame(gameLoop);
   }
 
-  // Controls
-  window.addEventListener("keydown", (e) => {
-    keys[e.key] = true;
+  // Wait until all images are loaded
+  let imagesLoaded = 0;
+  const totalImages = 3;
 
-    // Fighter 1 attacks with 'f'
-    if (e.key === "f" && fighter1.health > 0 && fighter2.health > 0) {
-      attack(fighter1, fighter2, "health2");
+  function checkStart() {
+    imagesLoaded++;
+    if (imagesLoaded === totalImages) {
+      gameLoop();
     }
+  }
 
-    // Fighter 2 attacks with 'Enter'
-    if (e.key === "Enter" && fighter1.health > 0 && fighter2.health > 0) {
-      attack(fighter2, fighter1, "health1");
-    }
-  });
+  arenaImg.onload = checkStart;
+  fighter1Img.onload = checkStart;
+  fighter2Img.onload = checkStart;
 
-  window.addEventListener("keyup", (e) => {
-    keys[e.key] = false;
-  });
-
-  arenaImg.onload = () => {
-    gameLoop();
-  };
+  // If image fails to load
+  arenaImg.onerror = () => alert("❌ 'arena.jpg' not found. Please check the file name.");
+  fighter1Img.onerror = () => alert("❌ 'fighter1.png' not found. Please check the file name.");
+  fighter2Img.onerror = () => alert("❌ 'fighter2.png' not found. Please check the file name.");
 </script>
 </body>
 </html>
